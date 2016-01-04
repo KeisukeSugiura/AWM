@@ -7,9 +7,9 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="./async.min.js"></script>
 </head>
-<body>
+<body style="margin:0px;">
 
-    <div id="bg">
+    <div id="item_board">
 
 
     </div>
@@ -19,7 +19,7 @@
  <script src="./colorFilter.js"></script>
  <script src="./ReflectionRemoveFilter.js"></script>
 <script>
-
+$(function(){
      var imageStack = new Array();
     // // console.log("imageResult("+String(screen.width)+","+String(screen.height)+")")
     // resultContextResult.drawImage(image4,0,0,resultCanvasResult.width,resultCanvasResult.height);
@@ -152,7 +152,7 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
 
 
 //アクティブウィンドウの配置をエッジマップとして作成
-makeEdgeMap();
+//makeEdgeMap();
 
 
 
@@ -238,11 +238,269 @@ makeEdgeMap();
     //   }
     //   image4.src='test13.png';
 
+    
+    function setScreenEdgeMap(){
+      
+            var mapImage = new Image();
+            mapImage.onload = function(){
+                var mapCanvas = document.createElement('canvas');
+                mapCanvas.width = mapImage.width;
+                mapCanvas.height = mapImage.height;
+                var mapContext = mapCanvas.getContext('2d');
+                mapContext.drawImage(mapImage,0,0,mapCanvas.width,mapCanvas.height);
+                screenEdgeMap = edgeDetector.getEdgeMap(mapCanvas);
+                }
+            mapImage.src = "test11.png";
+
+    }
 
 
+    function upsertSemiAutoClipping(thumbnail){
+        //thumbnail:{id,img,width,height}
+        var addImage = new Image();
+        addImage.width = thumbnail.width;
+        addImage.height = thumbnail.height;
+        addImage.id = thumbnail.id;
+        addImage.style.opacity = 0.5;
+        addImage.style.position = 'absolute';
+        addImage.className = 'autoClipping';
+        addImage.onload = function(){
+            var exClip = document.getElementsByClassName('autoClipping');
+            
+            if(exClip.length > 0){
+                var aClip = exClip[0];
+                addImage.style.left = aClip.style.left;
+                addImage.style.top = aClip.style.top;
+                $('#'+aClip.id).remove();
+                var addCanvas = document.createElement('canvas');
+                addCanvas.width = addImage.width;
+                addCanvas.height = addImage.height;
+                var addContext = addCanvas.getContext('2d');
+                addContext.drawImage(addImage,0,0,thumbnail.width,thumbnail.height);
+                imageEdgeMap = edgeDetector.getEdgeMap(addCanvas);
+                document.getElementById('item_board').appendChild(addImage);
+                //TODO 自動移動メソッドをsetIntervalでセットする
+               clearInterval(moveInterval);
+                moveInterval = null;
+               moveInterval =  setInterval(function(){calculate8Direction()},1000);
+            }else{
+                setScreenEdgeMap();
+
+                addImage.style.left = String(Math.random()*(screen.width-addImage.width))+"px";
+                addImage.style.top = String(Math.random()*(screen.height-addImage.height))+"px";
+                //addImage.style.left = "400px";
+                //addImage.style.top = "300px";
+                var addCanvas = document.createElement('canvas');
+                addCanvas.width = addImage.width;
+                addCanvas.height = addImage.height;
+                var addContext = addCanvas.getContext('2d');
+                addContext.drawImage(addImage,0,0,thumbnail.width,thumbnail.height);
+                imageEdgeMap = edgeDetector.getEdgeMap(addCanvas);
+                //telepath.send({to:'testLayer',body:{act:'consoleA',data:{edge:imageEdgeMap,width:addImage.width,left:addImage.style.left,img:thumbnail.img}}});
+
+                document.getElementById('item_board').appendChild(addImage);
+                //TODO 自動移動メソッドをsetIntervalでセットする
+                clearInterval(moveInterval);
+                moveInterval = null;
+               
+               moveInterval =  setInterval(function(){calculate8Direction()},1000);
+               //moveInterval = setInterval(function(){
+                  // telepath.send({to:'testLayer',body:{act:'consoleA',data:"go"}},function(){
+                  //       calculate8Direction()
+                  // });},1000);  
+            }
+        }
+        addImage.src = thumbnail.img;
+    }
+
+    function stopSemiAutoClipping(){
+        clearInterval(moveInterval);
+        moveInterval = null;
+        $('.autoClipping').remove();
+
+    }
+
+    function calculate8Direction(){
+        //差が最大
+        var AC = Math.floor(Math.random()*50);
+        var targetImage = document.getElementsByClassName('autoClipping')[0];
+        //telepath.send({to:'testLayer',body:{act:'consoleA',data:targetImage.style.left}});
+
+        var directions = new Array();
+        var direction1 = {
+            left:parseInt(targetImage.style.left)+AC,
+            top:parseInt(targetImage.style.top),
+            width:parseInt(targetImage.width),
+            height:parseInt(targetImage.height)
+        };
+        var direction2 = {
+            left:parseInt(targetImage.style.left)-AC,
+            top:parseInt(targetImage.style.top),
+            width:parseInt(targetImage.width),
+            height:parseInt(targetImage.height)
+        };
+        var direction3 = {
+            left:parseInt(targetImage.style.left),
+            top:parseInt(targetImage.style.top)+AC,
+            width:parseInt(targetImage.width),
+            height:parseInt(targetImage.height)
+        };
+        var direction4 = {
+            left:parseInt(targetImage.style.left),
+            top:parseInt(targetImage.style.top)-AC,
+            width:parseInt(targetImage.width),
+            height:parseInt(targetImage.height)
+        };
+        var direction5 = {
+            left:parseInt(targetImage.style.left)+AC,
+            top:parseInt(targetImage.style.top)+AC,
+            width:parseInt(targetImage.width),
+            height:parseInt(targetImage.height)
+        };
+        var direction6 = {
+            left:parseInt(targetImage.style.left)+AC,
+            top:parseInt(targetImage.style.top)-AC,
+            width:parseInt(targetImage.width),
+            height:parseInt(targetImage.height)
+        };
+        var direction7 = {
+            left:parseInt(targetImage.style.left)-AC,
+            top:parseInt(targetImage.style.top)+AC,
+            width:parseInt(targetImage.width),
+            height:parseInt(targetImage.height)
+        };
+        var direction8 = {
+            left:parseInt(targetImage.style.left)-AC,
+            top:parseInt(targetImage.style.top)-AC,
+            width:parseInt(targetImage.width),
+            height:parseInt(targetImage.height)
+        };
+        //telepath.send({to:'testLayer',body:{act:'consoleA',data:direction1}});
+        directions.push(direction1);
+        directions.push(direction2);
+        directions.push(direction3);
+        directions.push(direction4);
+        directions.push(direction5);
+        directions.push(direction6);
+        directions.push(direction7);
+        directions.push(direction8);
 
 
+        async.map(directions,function(value,next){
+            var score = calculateSumAbsSub(value); 
+            value.score = score;
+            next(null,value);
 
+        },function(err,resultList){
+            if(err){
+                console.error(err);
+            }else{
+                async.sortBy(resultList, function(item, done){
+               //console.log(item);
+                  done(null, item.score*1);
+                }, function(err,results){
+                  if (err){
+                     console.error(err);
+                  }else{
+                    //console.log(results);
+                     
+                    // telepath.send({to:'testLayer',body:{act:'consoleA',data:results}});
+                    //移動処理
+                    // if(currentScore >= results[0].score){
+                    //     clearInterval(moveInterval);
+                    //     moveInterval = null;
+                    // }else{
+                    targetImage.style.left = String(results[0].left) + "px";
+                    targetImage.style.top = String(results[0].top) + "px";
+                    currentScore = results[0].score;
+                    //}
+                    //console.error(currentScore);
+                }
+
+                });
+
+            }
+        });
+
+    }
+
+    function calculateSumAbsSub(direction){
+        var fromX = direction.left;
+        var lengthX = direction.width;
+        var fromY = direction.top;
+        var lengthY = direction.height;
+
+        if(fromX<0){
+            return 0;
+        }
+        if(fromX + lengthX > screen.width){
+            return 0;
+        }
+        if(fromY < 0){
+            return 0;
+        }
+        if(fromY + lengthY > screen.height){
+            return 0;
+        }
+
+        var score = 0;
+        for(var i = fromY; i<fromY+lengthY;i++){
+            for(var j = fromX; j< fromX+lengthX; j++){
+                //screenEdgeMap
+                //imageEdgeMap
+                score = score + Math.abs(screenEdgeMap[screen.width*i + j]-imageEdgeMap[(i-fromY)*(lengthX) + j-fromX]);
+                if(i==fromY+lengthY-1 && j==fromX+lengthX-1){
+               // telepath.send({to:'testLayer',body:{act:'consoleA',data:'0000000'}});
+               console.log('aaaa');
+               // telepath.send({to:'testLayer',body:{act:'consoleA',data:{imageX:(i-fromY)*(lengthX)+j-fromX,name:'0000000',imageE:imageEdgeMap.length,screenE:screenEdgeMap.length,x:lengthX}}});
+                }
+            }
+        }
+
+        return score;
+
+    }
+
+
+var moveInterval = null;
+var currentScore = 0;
+var screenEdgeMap = [];//全体のスクリーンショットのエッジマップ
+var imageEdgeMap=[];//動かす画像のエッジマップ
+var screenImage = new Image();
+var screenImageID = 'screenImage';
+var referenceImage = new Image();
+var referenceImageID1 = 'referenceImage1';
+var referenceImageID2 = 'referenceImage2';
+var referenceImageID3 = 'referenceImage3';
+var referenceImageObject = {
+  id:null,
+  img:null,
+  width:0,
+  height:0
+};
+
+screenImage.onload = function(e){
+  screenImage.style.position = 'absolute';
+  document.getElementById('item_board').appendChild(screenImage);
+
+  referenceImage.onload = function(e){
+    referenceImageObject.img="test13.png";
+    console.log(referenceImage.width);
+    console.log(referenceImage.height);
+    referenceImageObject.id = referenceImageID1;
+    referenceImageObject.width = referenceImage.width;
+    referenceImageObject.height = referenceImage.height;
+    upsertSemiAutoClipping(referenceImageObject);
+
+  }
+
+  referenceImage.src="test13.png";
+}
+screenImage.src = 'test11.png';
+
+
+});
+  
 
 
 
