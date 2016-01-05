@@ -239,7 +239,7 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
     //   image4.src='test13.png';
 
     
-    function setScreenEdgeMap(){
+    function setScreenEdgeMap(callback){
       
             var mapImage = new Image();
             mapImage.onload = function(){
@@ -249,6 +249,7 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                 var mapContext = mapCanvas.getContext('2d');
                 mapContext.drawImage(mapImage,0,0,mapCanvas.width,mapCanvas.height);
                 screenEdgeMap = edgeDetector.getEdgeMap(mapCanvas);
+                callback();
                 }
             mapImage.src = "test11.png";
 
@@ -284,7 +285,7 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                 moveInterval = null;
                moveInterval =  setInterval(function(){calculate8Direction()},1000);
             }else{
-                setScreenEdgeMap();
+                setScreenEdgeMap(function(){
 
                 addImage.style.left = String(Math.random()*(screen.width-addImage.width))+"px";
                 addImage.style.top = String(Math.random()*(screen.height-addImage.height))+"px";
@@ -308,7 +309,12 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                   // telepath.send({to:'testLayer',body:{act:'consoleA',data:"go"}},function(){
                   //       calculate8Direction()
                   // });},1000);  
-            }
+        
+
+
+
+                });
+    }
         }
         addImage.src = thumbnail.img;
     }
@@ -448,10 +454,21 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
             for(var j = fromX; j< fromX+lengthX; j++){
                 //screenEdgeMap
                 //imageEdgeMap
-                score = score + Math.abs(screenEdgeMap[screen.width*i + j]-imageEdgeMap[(i-fromY)*(lengthX) + j-fromX]);
+                var plus = Math.abs(screenEdgeMap[screen.width*i + j]-imageEdgeMap[(i-fromY)*(lengthX) + j-fromX]);
+                if(!isNaN(plus)){
+                  score = score + plus;
+  
+                }
+                
                 if(i==fromY+lengthY-1 && j==fromX+lengthX-1){
                // telepath.send({to:'testLayer',body:{act:'consoleA',data:'0000000'}});
                console.log('aaaa');
+               console.log(String(i)+"  "+String(fromY+lengthY-1));
+               console.log(String(j)+"  "+String(fromX+lengthX-1));
+               console.log(score);
+               console.log(imageEdgeMap.length);
+
+              // console.log(screenEdgeMap[screen.width*i + j]);
                // telepath.send({to:'testLayer',body:{act:'consoleA',data:{imageX:(i-fromY)*(lengthX)+j-fromX,name:'0000000',imageE:imageEdgeMap.length,screenE:screenEdgeMap.length,x:lengthX}}});
                 }
             }
@@ -485,13 +502,11 @@ screenImage.onload = function(e){
 
   referenceImage.onload = function(e){
     referenceImageObject.img="test13.png";
-    console.log(referenceImage.width);
-    console.log(referenceImage.height);
     referenceImageObject.id = referenceImageID1;
     referenceImageObject.width = referenceImage.width;
     referenceImageObject.height = referenceImage.height;
     upsertSemiAutoClipping(referenceImageObject);
-
+    console.log(referenceImageObject);
   }
 
   referenceImage.src="test13.png";

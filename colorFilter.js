@@ -686,14 +686,14 @@ var edgeDetector = (function(){
             }else{
                 async.sortBy(resultList, function(item, done){
                //console.log(item);
-                  done(null, item.score*-1);
+                  done(null, item.score*1);
                 }, function(err,results){
                   if (err){
                      console.error(err);
                   }else{
                     console.log(results);
                      
-                     telepath.send({to:'testLayer',body:{act:'consoleA',data:results}});
+                     //telepath.send({to:'testLayer',body:{act:'consoleA',data:results}});
                     //移動処理
                     // if(currentScore >= results[0].score){
                     //     clearInterval(moveInterval);

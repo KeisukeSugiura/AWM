@@ -815,7 +815,7 @@ $(function () {
         //sort
           async.sortBy(resultsCount, function(item, done){
                //console.log(item);
-              done(null, item.edgeCount*-1);
+              done(null, item.edgeCount*1);
           }, function(err,results){
               if (err){
                  console.error(err);
@@ -1165,6 +1165,7 @@ $(function () {
             }else{
                 async.sortBy(resultList, function(item, done){
                //console.log(item);
+               //+昇順1,2,3,4...
                   done(null, item.score*1);
                 }, function(err,results){
                   if (err){
