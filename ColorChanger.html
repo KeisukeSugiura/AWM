@@ -251,7 +251,8 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                 screenEdgeMap = edgeDetector.getEdgeMap(mapCanvas);
                 callback();
                 }
-            mapImage.src = "test11.png";
+            //スクリーンショット
+            mapImage.src = screenImageUrl;
 
     }
 
@@ -283,38 +284,51 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                 //TODO 自動移動メソッドをsetIntervalでセットする
                clearInterval(moveInterval);
                 moveInterval = null;
-               moveInterval =  setInterval(function(){calculate8Direction()},1000);
+               moveInterval =  setInterval(function(){calculate8Direction()},100);
             }else{
                 setScreenEdgeMap(function(){
+                initialPositionCheck(parseInt(addImage.width),parseInt(addImage.height),function(scoreArray){
 
-                addImage.style.left = String(Math.random()*(screen.width-addImage.width))+"px";
-                addImage.style.top = String(Math.random()*(screen.height-addImage.height))+"px";
-                //addImage.style.left = "400px";
-                //addImage.style.top = "300px";
-                var addCanvas = document.createElement('canvas');
-                addCanvas.width = addImage.width;
-                addCanvas.height = addImage.height;
-                var addContext = addCanvas.getContext('2d');
-                addContext.drawImage(addImage,0,0,thumbnail.width,thumbnail.height);
-                imageEdgeMap = edgeDetector.getEdgeMap(addCanvas);
-                //telepath.send({to:'testLayer',body:{act:'consoleA',data:{edge:imageEdgeMap,width:addImage.width,left:addImage.style.left,img:thumbnail.img}}});
+                  //console.log(scoreArray);
+                 async.sortBy(scoreArray, function(item, done){
+                   console.log(item);
+                      done(null, item.score*1);
+                    }, function(err,results){
+                      if (err){
+                         console.error(err);
+                      }else{
+                        var initialPositionItem = results[0];
+                        addImage.style.left = String(initialPositionItem.left)+"px";
+                        addImage.style.top = String(initialPositionItem.top)+"px";
+                        //addImage.style.left = "400px";
+                        //addImage.style.top = "300px";
+                        var addCanvas = document.createElement('canvas');
+                        addCanvas.width = addImage.width;
+                        addCanvas.height = addImage.height;
+                        var addContext = addCanvas.getContext('2d');
+                        addContext.drawImage(addImage,0,0,thumbnail.width,thumbnail.height);
+                        imageEdgeMap = edgeDetector.getEdgeMap(addCanvas);
+                        //telepath.send({to:'testLayer',body:{act:'consoleA',data:{edge:imageEdgeMap,width:addImage.width,left:addImage.style.left,img:thumbnail.img}}});
 
-                document.getElementById('item_board').appendChild(addImage);
-                //TODO 自動移動メソッドをsetIntervalでセットする
-                clearInterval(moveInterval);
-                moveInterval = null;
-               
-               moveInterval =  setInterval(function(){calculate8Direction()},1000);
-               //moveInterval = setInterval(function(){
-                  // telepath.send({to:'testLayer',body:{act:'consoleA',data:"go"}},function(){
-                  //       calculate8Direction()
-                  // });},1000);  
-        
-
+                        document.getElementById('item_board').appendChild(addImage);
+                        //TODO 自動移動メソッドをsetIntervalでセットする
+                        clearInterval(moveInterval);
+                        moveInterval = null;
+                       
+                       moveInterval =  setInterval(function(){calculate8Direction()},100);
+                       //moveInterval = setInterval(function(){
+                          // telepath.send({to:'testLayer',body:{act:'consoleA',data:"go"}},function(){
+                          //       calculate8Direction()
+                          // });},1000);  
+                
+                      }
+                  });
 
 
                 });
-    }
+                
+                });
+            }
         }
         addImage.src = thumbnail.img;
     }
@@ -328,7 +342,8 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
 
     function calculate8Direction(){
         //差が最大
-        var AC = Math.floor(Math.random()*50);
+        //var AC = Math.floor(Math.random()*50);
+        var AC = Math.floor(20+Math.random()*30);
         var targetImage = document.getElementsByClassName('autoClipping')[0];
         //telepath.send({to:'testLayer',body:{act:'consoleA',data:targetImage.style.left}});
 
@@ -402,7 +417,7 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                 console.error(err);
             }else{
                 async.sortBy(resultList, function(item, done){
-               //console.log(item);
+                //console.log(item);
                   done(null, item.score*1);
                 }, function(err,results){
                   if (err){
@@ -411,15 +426,28 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                     //console.log(results);
                      
                     // telepath.send({to:'testLayer',body:{act:'consoleA',data:results}});
-                    //移動処理
-                    // if(currentScore >= results[0].score){
-                    //     clearInterval(moveInterval);
-                    //     moveInterval = null;
-                    // }else{
+                   // 移動処理
+                    if(currentScore <= results[0].score){
+                        endCount++;
+                        if(endCount<5){
+
+                      console.log(results[0]);
+                            targetImage.style.left = String(results[0].left) + "px";
+                            targetImage.style.top = String(results[0].top) + "px";
+                            currentScore = results[0].score;
+                            
+                        }else{
+                            encCount=0;
+                             clearInterval(moveInterval);
+                             moveInterval = null;
+                          
+                        }
+                     }else{
+                      console.log(results[0]);
                     targetImage.style.left = String(results[0].left) + "px";
                     targetImage.style.top = String(results[0].top) + "px";
                     currentScore = results[0].score;
-                    //}
+                    }
                     //console.error(currentScore);
                 }
 
@@ -436,17 +464,19 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
         var fromY = direction.top;
         var lengthY = direction.height;
 
+        // console.log(fromX);
+        // console.log(lengthX);
         if(fromX<0){
-            return 0;
+            return Number.MAX_VALUE;
         }
         if(fromX + lengthX > screen.width){
-            return 0;
+            return Number.MAX_VALUE;
         }
         if(fromY < 0){
-            return 0;
+            return Number.MAX_VALUE;
         }
         if(fromY + lengthY > screen.height){
-            return 0;
+            return Number.MAX_VALUE;
         }
 
         var score = 0;
@@ -454,7 +484,8 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
             for(var j = fromX; j< fromX+lengthX; j++){
                 //screenEdgeMap
                 //imageEdgeMap
-                var plus = Math.abs(screenEdgeMap[screen.width*i + j]-imageEdgeMap[(i-fromY)*(lengthX) + j-fromX]);
+               // var plus = Math.abs(screenEdgeMap[screen.width*i + j]-imageEdgeMap[(i-fromY)*(lengthX) + j-fromX]);
+                var plus = Math.abs(screenEdgeMap[screen.width*i + j]);
                 if(!isNaN(plus)){
                   score = score + plus;
   
@@ -462,14 +493,14 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                 
                 if(i==fromY+lengthY-1 && j==fromX+lengthX-1){
                // telepath.send({to:'testLayer',body:{act:'consoleA',data:'0000000'}});
-               console.log('aaaa');
-               console.log(String(i)+"  "+String(fromY+lengthY-1));
-               console.log(String(j)+"  "+String(fromX+lengthX-1));
-               console.log(score);
-               console.log(imageEdgeMap.length);
-               console.log(screen.height);
-               console.log(screen.width);
-               //1440 2560
+               //console.log('aaaa');
+               // console.log(String(i)+"  "+String(fromY+lengthY-1));
+               // console.log(String(j)+"  "+String(fromX+lengthX-1));
+               // console.log(score);
+               // console.log(imageEdgeMap.length);
+               // console.log(screen.height);
+               // console.log(screen.width);
+               // //1440 2560
               // console.log(screenEdgeMap[screen.width*i + j]);
                // telepath.send({to:'testLayer',body:{act:'consoleA',data:{imageX:(i-fromY)*(lengthX)+j-fromX,name:'0000000',imageE:imageEdgeMap.length,screenE:screenEdgeMap.length,x:lengthX}}});
                 }
@@ -480,12 +511,72 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
 
     }
 
+function initialPositionCheck(addImageWidth,addImageHeight,callback){
+  //グローバルのscreenEdgeMapを使う
+  var checkRow = Math.floor(screen.height/addImageHeight); //行
+  var checkCol = Math.floor(screen.width/addImageWidth); //列
+  var checkWidth = Math.floor(screen.width/checkCol);
+  var checkHeight = Math.floor(screen.height/checkRow);
+  var scoreArray = new Array(checkRow*checkCol);
+  var calCount = 0;
+  var endCount = checkRow*checkHeight*checkCol*checkWidth;
+
+  for(var i=0; i<checkRow;i++){
+    for(var j=0; j<checkCol; j++){
+      // scoreArray[checkRow*i+checkCol*j].score=0;
+      // scoreArray[checkRow*i+checkCol*j].row=i;
+      // scoreArray[checkRow*i+checkCol*j].col=j;
+      // scoreArray[checkRow*i+checkCol*j].width=checkWidth;
+      // scoreArray[checkRow*i+checkCol*j].height=checkHeight;
+      scoreArray[i*checkCol+j] = {
+        score:0,
+        top:i*checkHeight,
+        left:j*checkWidth,
+        row:i,
+        col:j,
+        width:checkWidth,
+        height:checkHeight
+      };
+      console.log(i*checkCol+j);
+      for(var r = checkHeight*i;r<checkHeight*i+checkHeight;r++){
+        for(var c = j*checkWidth; c<j*checkWidth+checkWidth;c++){
+
+          var plus = screenEdgeMap[r*screen.width+c];
+          calCount++;
+          if(!isNaN(plus)){
+            
+            scoreArray[i*checkCol+j].score+=plus;
+
+          }
+
+          if(calCount == endCount){
+
+            //console.log(checkRow);
+           // console.log(checkCol);
+           // console.log(checkWidth);
+          //  console.log(checkHeight);
+          //  console.log(calCount);
+         //   console.log(endCount);
+         //   console.log(screen.width*screen.height);
+
+
+            callback(scoreArray);
+         
+          }
+        }
+      }
+    }
+  }
+}
+
 
 var moveInterval = null;
 var currentScore = 0;
 var screenEdgeMap = [];//全体のスクリーンショットのエッジマップ
 var imageEdgeMap=[];//動かす画像のエッジマップ
 var screenImage = new Image();
+var screenImageUrl = 'test10.png';
+var referenceImageUrl = 'test13.png';
 var screenImageID = 'screenImage';
 var referenceImage = new Image();
 var referenceImageID1 = 'referenceImage1';
@@ -497,13 +588,14 @@ var referenceImageObject = {
   width:0,
   height:0
 };
+var endCount =0;
 
 screenImage.onload = function(e){
   screenImage.style.position = 'absolute';
   document.getElementById('item_board').appendChild(screenImage);
 
   referenceImage.onload = function(e){
-    referenceImageObject.img="test13.png";
+    referenceImageObject.img= referenceImageUrl;
     referenceImageObject.id = referenceImageID1;
     referenceImageObject.width = referenceImage.width;
     referenceImageObject.height = referenceImage.height;
@@ -513,7 +605,8 @@ screenImage.onload = function(e){
 
   referenceImage.src="test13.png";
 }
-screenImage.src = 'test11.png';
+//スクリーンショット
+screenImage.src = screenImageUrl;
 
 
 });

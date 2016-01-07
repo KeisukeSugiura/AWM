@@ -357,6 +357,14 @@ var edgeDetector = (function(){
                     filter[(n + init) * size_f + m + init];
                 }
               }
+
+              // var ac = Math.floor(Math.abs(sum));
+              // if(ac < 50){
+              //   resultImage[i*width + j] = 0;
+              // }else{
+
+              //   resultImage[i*width + j] = 1;
+              // }
               resultImage[i * width + j] = Math.floor(Math.abs(sum));
             }
           }
