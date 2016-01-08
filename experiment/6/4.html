@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Language" content="ja">
 <title>Chroma key</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<script src="./async.min.js"></script>
+<script src="../../async.min.js"></script>
 </head>
 <body style="margin:0px;">
 
@@ -16,8 +16,8 @@
 
 
 
- <script src="./colorFilter.js"></script>
- <script src="./ReflectionRemoveFilter.js"></script>
+ <script src="../../colorFilter.js"></script>
+ <script src="../../ReflectionRemoveFilter.js"></script>
 <script>
 $(function(){
      var imageStack = new Array();
@@ -289,16 +289,14 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                 setScreenEdgeMap(function(){
                 initialPositionCheck(parseInt(addImage.width),parseInt(addImage.height),function(scoreArray){
 
-                  console.log(scoreArray);
+                  //console.log(scoreArray);
                  async.sortBy(scoreArray, function(item, done){
-                   //console.log(item);
+                   console.log(item);
                       done(null, item.score*1);
                     }, function(err,results){
                       if (err){
                          console.error(err);
                       }else{
-                        //console.log('aaaaaaaaaaaaa');
-                    // console.log(results[0]);
                         var initialPositionItem = results[0];
                         addImage.style.left = String(initialPositionItem.left)+"px";
                         addImage.style.top = String(initialPositionItem.top)+"px";
@@ -354,57 +352,49 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
             left:parseInt(targetImage.style.left)+AC,
             top:parseInt(targetImage.style.top),
             width:parseInt(targetImage.width),
-            height:parseInt(targetImage.height),
-            direction:'右'
+            height:parseInt(targetImage.height)
         };
         var direction2 = {
             left:parseInt(targetImage.style.left)-AC,
             top:parseInt(targetImage.style.top),
             width:parseInt(targetImage.width),
-            height:parseInt(targetImage.height),
-            direction:'左'
+            height:parseInt(targetImage.height)
         };
         var direction3 = {
             left:parseInt(targetImage.style.left),
             top:parseInt(targetImage.style.top)+AC,
             width:parseInt(targetImage.width),
-            height:parseInt(targetImage.height),
-            direction:'下'
+            height:parseInt(targetImage.height)
         };
         var direction4 = {
             left:parseInt(targetImage.style.left),
             top:parseInt(targetImage.style.top)-AC,
             width:parseInt(targetImage.width),
-            height:parseInt(targetImage.height),
-            direction:'上'
+            height:parseInt(targetImage.height)
         };
         var direction5 = {
             left:parseInt(targetImage.style.left)+AC,
             top:parseInt(targetImage.style.top)+AC,
             width:parseInt(targetImage.width),
-            height:parseInt(targetImage.height),
-            direction:'右下'
+            height:parseInt(targetImage.height)
         };
         var direction6 = {
             left:parseInt(targetImage.style.left)+AC,
             top:parseInt(targetImage.style.top)-AC,
             width:parseInt(targetImage.width),
-            height:parseInt(targetImage.height),
-            direction:'右上'
+            height:parseInt(targetImage.height)
         };
         var direction7 = {
             left:parseInt(targetImage.style.left)-AC,
             top:parseInt(targetImage.style.top)+AC,
             width:parseInt(targetImage.width),
-            height:parseInt(targetImage.height),
-            direction:'左下'
+            height:parseInt(targetImage.height)
         };
         var direction8 = {
             left:parseInt(targetImage.style.left)-AC,
             top:parseInt(targetImage.style.top)-AC,
             width:parseInt(targetImage.width),
-            height:parseInt(targetImage.height),
-            direction:'左上'
+            height:parseInt(targetImage.height)
         };
         //telepath.send({to:'testLayer',body:{act:'consoleA',data:direction1}});
         directions.push(direction1);
@@ -433,8 +423,8 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                   if (err){
                      console.error(err);
                   }else{
-                    console.log(results);
-                    
+                    //console.log(results);
+                     
                     // telepath.send({to:'testLayer',body:{act:'consoleA',data:results}});
                    // 移動処理
                     if(currentScore <= results[0].score){
@@ -453,7 +443,7 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                           
                         }
                      }else{
-                     // console.log(results[0]);
+                      console.log(results[0]);
                     targetImage.style.left = String(results[0].left) + "px";
                     targetImage.style.top = String(results[0].top) + "px";
                     currentScore = results[0].score;
@@ -473,24 +463,20 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
         var lengthX = direction.width;
         var fromY = direction.top;
         var lengthY = direction.height;
-        //console.log(direction.direction);
+
         // console.log(fromX);
         // console.log(lengthX);
         if(fromX<0){
-            //console.log("error left<0 : "+String(fromX));
             return Number.MAX_VALUE;
         }
         if(fromX + lengthX > screen.width){
-            //console.log("error maxWidth<left : "+String(fromX+lengthX));
             return Number.MAX_VALUE;
         }
         if(fromY < 0){
-            //console.log("error top<0 : "+String(fromX));
             return Number.MAX_VALUE;
         }
         if(fromY + lengthY > screen.height){
-          //     console.log("error MaxHeight<top : "+String(fromY+lengthY));
-               return Number.MAX_VALUE;
+            return Number.MAX_VALUE;
         }
 
         var score = 0;
@@ -520,27 +506,20 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                 }
             }
         }
-        //console.log("ok : "+String(score));
+
         return score;
 
     }
 
 function initialPositionCheck(addImageWidth,addImageHeight,callback){
   //グローバルのscreenEdgeMapを使う
-  var divideWindowCount = 1; //たてよこどちらも-倍ってこと->はみでる
-  var checkRow = Math.floor(screen.height/addImageHeight*divideWindowCount); //行
-  var checkCol = Math.floor(screen.width/addImageWidth*divideWindowCount); //列
-  // var checkWidth = Math.floor(screen.width/checkCol);
-  // var checkHeight = Math.floor(screen.height/checkRow);
-  var checkWidth = addImageWidth;
-  var checkHeight = addImageHeight; 
-
+  var checkRow = Math.floor(screen.height/addImageHeight); //行
+  var checkCol = Math.floor(screen.width/addImageWidth); //列
+  var checkWidth = Math.floor(screen.width/checkCol);
+  var checkHeight = Math.floor(screen.height/checkRow);
   var scoreArray = new Array(checkRow*checkCol);
-  var scoreArray2 = new Array(checkRow*checkCol);
-  var scoreArray3 = new Array(checkRow*checkCol);
-  var scoreArray4 = new Array(checkRow*checkCol);
   var calCount = 0;
-  var endCount = checkRow*checkHeight*checkCol*checkWidth*divideWindowCount*divideWindowCount;
+  var endCount = checkRow*checkHeight*checkCol*checkWidth;
 
   for(var i=0; i<checkRow;i++){
     for(var j=0; j<checkCol; j++){
@@ -549,75 +528,29 @@ function initialPositionCheck(addImageWidth,addImageHeight,callback){
       // scoreArray[checkRow*i+checkCol*j].col=j;
       // scoreArray[checkRow*i+checkCol*j].width=checkWidth;
       // scoreArray[checkRow*i+checkCol*j].height=checkHeight;
-      //
-      //左上
-      scoreArray[(i*checkCol+j)*4] = {
+      scoreArray[i*checkCol+j] = {
         score:0,
-        top:i*checkHeight-1,
-        left:j*checkWidth-1,
-        row:i,
-        col:j,
-        width:checkWidth,
-        height:checkHeight
-      };
-      //右上
-      scoreArray[(i*checkCol+j)*4+1] = {
-        score:0,
-        top:i*checkHeight-1,
-        left:screen.width-j*checkWidth-checkWidth-1,
-        row:i,
-        col:j,
-        width:checkWidth,
-        height:checkHeight
-      };
-      //左下
-      scoreArray[(i*checkCol+j)*4+2] = {
-        score:0,
-        top:screen.height-(i+1)*checkHeight-1,
-        left:j*checkWidth-1,
-        row:i,
-        col:j,
-        width:checkWidth,
-        height:checkHeight
-      };
-      //右下
-      scoreArray[(i*checkCol+j)*4+3] = {
-        score:0,
-        top:screen.height-(i+1)*checkHeight-1,
-        left:screen.width-j*checkWidth-checkWidth-1,
+        top:i*checkHeight,
+        left:j*checkWidth,
         row:i,
         col:j,
         width:checkWidth,
         height:checkHeight
       };
       console.log(i*checkCol+j);
-      for(var r = checkHeight*i;r<checkHeight*i+checkHeight*divideWindowCount;r++){
-        for(var c = j*checkWidth; c<j*checkWidth+checkWidth*divideWindowCount;c++){
+      for(var r = checkHeight*i;r<checkHeight*i+checkHeight;r++){
+        for(var c = j*checkWidth; c<j*checkWidth+checkWidth;c++){
 
           var plus = screenEdgeMap[r*screen.width+c];
-          var plus2 = screenEdgeMap[(r+1)*screen.width-c];
-          var plus3 = screenEdgeMap[screen.width*(screen.height-r)+c];
-          var plus4 = screenEdgeMap[screen.width*(screen.height-r+1)-c];
           calCount++;
-          if(!isNaN(plus) && !isNaN(plus2) && !isNaN(plus3) && !isNaN(plus4)){
+          if(!isNaN(plus)){
             
-            scoreArray[(i*checkCol+j)*4].score+=plus;
-
-            scoreArray[(i*checkCol+j)*4+1].score+=plus2;
-
-            scoreArray[(i*checkCol+j)*4+2].score+=plus3;
-
-            scoreArray[(i*checkCol+j)*4+3].score+=plus4;
-
+            scoreArray[i*checkCol+j].score+=plus;
 
           }
 
-
           if(calCount == endCount){
 
-
-          //console.log(calCount);
-          //console.log(endCount);
             //console.log(checkRow);
            // console.log(checkCol);
            // console.log(checkWidth);
@@ -626,12 +559,11 @@ function initialPositionCheck(addImageWidth,addImageHeight,callback){
          //   console.log(endCount);
          //   console.log(screen.width*screen.height);
 
+
             callback(scoreArray);
          
           }
         }
-
-
       }
     }
   }
@@ -643,8 +575,8 @@ var currentScore = 0;
 var screenEdgeMap = [];//全体のスクリーンショットのエッジマップ
 var imageEdgeMap=[];//動かす画像のエッジマップ
 var screenImage = new Image();
-var screenImageUrl = 'screen/test1.png';
-var referenceImageUrl = 'reference/test4.png';
+var screenImageUrl = '../../screen/test6.png';
+var referenceImageUrl = '../../reference/test4.png';
 var screenImageID = 'screenImage';
 var referenceImage = new Image();
 var referenceImageID1 = 'referenceImage1';
