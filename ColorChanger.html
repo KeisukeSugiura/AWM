@@ -259,6 +259,7 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
 
     function upsertSemiAutoClipping(thumbnail){
         //thumbnail:{id,img,width,height}
+        startAllTime = new Date();
         var addImage = new Image();
         addImage.width = thumbnail.width;
         addImage.height = thumbnail.height;
@@ -345,6 +346,7 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
     function calculate8Direction(){
         //差が最大
         //var AC = Math.floor(Math.random()*50);
+        startHillClimbStepTime = new Date();
         var AC = Math.floor(20+Math.random()*30);
         var targetImage = document.getElementsByClassName('autoClipping')[0];
         //telepath.send({to:'testLayer',body:{act:'consoleA',data:targetImage.style.left}});
@@ -434,29 +436,48 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
                      console.error(err);
                   }else{
                     console.log(results);
-                    
+                    endHillClimbStepTime = new Date();
+                    console.log(String(hillClimbStepTimes.length)+'回目 : '+String(endHillClimbStepTime- startHillClimbStepTime )+'ms');
+                    hillClimbStepTimes.push(endHillClimbStepTime-startHillClimbStepTime);
                     // telepath.send({to:'testLayer',body:{act:'consoleA',data:results}});
                    // 移動処理
                     if(currentScore <= results[0].score){
-                        endCount++;
-                        if(endCount<5){
+                        stopCount++;
+                        if(stopCount<5){
 
-                      console.log(results[0]);
-                            targetImage.style.left = String(results[0].left) + "px";
-                            targetImage.style.top = String(results[0].top) + "px";
-                            currentScore = results[0].score;
+                            console.log(results[0]);
+                            //targetImage.style.left = String(results[0].left) + "px";
+                            //targetImage.style.top = String(results[0].top) + "px";
+                            //currentScore = results[0].score;
                             
                         }else{
-                            encCount=0;
+                            stopCount=0;
                              clearInterval(moveInterval);
                              moveInterval = null;
-                          
+                             var times = 0;
+                            async.forEach(hillClimbStepTimes,function(item,callback){
+                              times+=item;
+                              callback();
+                            },function(err){
+
+                              console.log('InitialPositionCheck 探索数 : '+String(searchInitialSetPositionCount));
+                              console.log('InitialPositionCheck 探索時間 : '+String(searchInitialSetPositionTime)+'ms');
+                              console.log('山登り 探索数: '+String(hillClimbStepTimes.length)+'回');
+                              console.log('山登り 探索時間: '+String(times)+'ms');
+                              console.log(hillClimbStepTimes);
+                              console.log('山登り 1ステップ平均: '+String(times/hillClimbStepTimes.length)+'ms');
+                              console.log('総探索数 : '+ String(hillClimbStepTimes.length+searchInitialSetPositionCount)+'回');
+                              console.log('総探索時間 : '+String(searchInitialSetPositionTime+times)+'ms');
+                              console.log('referenceWindow( width : '+String(referenceImageObject.width)+'px, height : '+String(referenceImageObject.height)+'px )');
+                              console.log('screenWindow( width : '+String(screenImage.width)+'px, height : '+String(screenImage.height)+'px )');
+                            });
                         }
                      }else{
                      // console.log(results[0]);
                     targetImage.style.left = String(results[0].left) + "px";
                     targetImage.style.top = String(results[0].top) + "px";
                     currentScore = results[0].score;
+                    stopCount = 0;
                     }
                     //console.error(currentScore);
                 }
@@ -527,6 +548,7 @@ function makePositionCandidate(currentEdgeMap,activeWindow,referenceWindow){
 
 function initialPositionCheck(addImageWidth,addImageHeight,callback){
   //グローバルのscreenEdgeMapを使う
+  startInitialSetPositionTime = new Date();
   var divideWindowCount = 1; //たてよこどちらも-倍ってこと->はみでる
   var checkRow = Math.floor(screen.height/addImageHeight*divideWindowCount); //行
   var checkCol = Math.floor(screen.width/addImageWidth*divideWindowCount); //列
@@ -625,7 +647,11 @@ function initialPositionCheck(addImageWidth,addImageHeight,callback){
           //  console.log(calCount);
          //   console.log(endCount);
          //   console.log(screen.width*screen.height);
-
+            endInitialSetPositiontime = new Date();
+            console.log('InitialPositionCheck 探索数 : '+String(scoreArray.length));
+            console.log('InitialPositionCheck 探索時間 : '+String(endInitialSetPositiontime - startInitialSetPositionTime)+'ms');
+            searchInitialSetPositionCount= scoreArray.length;
+            searchInitialSetPositionTime = endInitialSetPositiontime - startInitialSetPositionTime;
             callback(scoreArray);
          
           }
@@ -639,17 +665,48 @@ function initialPositionCheck(addImageWidth,addImageHeight,callback){
 
 
 var moveInterval = null;
-var currentScore = 0;
+var currentScore = Number.MAX_VALUE;
 var screenEdgeMap = [];//全体のスクリーンショットのエッジマップ
 var imageEdgeMap=[];//動かす画像のエッジマップ
 var screenImage = new Image();
 var screenImageUrl = 'screen/test1.png';
-var referenceImageUrl = 'reference/test4.png';
+var referenceImageUrl = 'reference/test1.png';
 var screenImageID = 'screenImage';
 var referenceImage = new Image();
 var referenceImageID1 = 'referenceImage1';
 var referenceImageID2 = 'referenceImage2';
 var referenceImageID3 = 'referenceImage3';
+
+var stopCount =0;
+
+//機能の開始時間
+var startAllTime = 0;
+var endAllTime = 0;
+//初期ポジション設定
+var startInitialSetPositionTime=0;
+var endInitialSetPositiontime=0;
+//山登り法全体
+var startHillClimbTime=0;
+var endHillClimbTime=0;
+//山登り法の1ステップ
+var hillClimbStepTimes = [];
+var startHillClimbStepTime=0;
+var endHillClimbStepTime=0;
+//探索数
+var searchInitialSetPositionCount=0;
+var searchHilClimbCount=0;
+//ウィンドウサイズ
+var referenceWindowProperty = {
+  width:0,
+  height:0
+}
+var screenWindowProperty = {
+  width:0,
+  height:0
+}
+
+var searchInitialSetPositionTime=0;
+
 var referenceImageObject = {
   id:null,
   img:null,
